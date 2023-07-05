@@ -5,14 +5,16 @@ import FormInput from 'src/components/FormInput/FormInput';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { LinkItem } from './Login';
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
-
-
 import { object, string, TypeOf } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import {useRegisterUserMutation} from "../../../redux/api/authApi";
 
 // 👇 SignUp Schema with Zod
 const signupSchema = object({
-    name: string().min(1, 'Name is required').max(70),
+    name: string().min(4, 'Name is required').max(70)
+        .refine((value) => /^[a-zA-Z0-9_]+$/.test(value), {
+            message: 'Username must only contain alphanumeric characters and underscores',
+        }),
     email: string().min(1, 'Email is required').email('Email is invalid'),
     password: string()
       .min(1, 'Password is required')
@@ -29,11 +31,15 @@ type ISignUp = TypeOf<typeof signupSchema>;
 
 function RegisterPage() {
 
-const defaultValues: ISignUp = {
-    name: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
+
+    const [registerUser, { isLoading, isError }] = useRegisterUserMutation();
+
+
+    const defaultValues: ISignUp = {
+        name: '',
+        email: '',
+        password: '',
+        passwordConfirm: '',
     };
 
      // 👇 Object containing all the methods returned by useForm
@@ -41,6 +47,11 @@ const defaultValues: ISignUp = {
     resolver: zodResolver(signupSchema),
     defaultValues,
   });
+
+    const onSubmitHandler: SubmitHandler<ISignUp> = (values: ISignUp) => {
+        console.log(values);
+        registerUser(values)
+    };
   
 
   return (
@@ -106,6 +117,7 @@ const defaultValues: ISignUp = {
                     noValidate
                     autoComplete='off'
                     sx={{ paddingRight: { sm: '3rem' } }}
+                    onSubmit={methods.handleSubmit(onSubmitHandler)}
                   >
                     <Typography
                       variant='h6'

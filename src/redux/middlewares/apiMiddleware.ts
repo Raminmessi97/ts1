@@ -4,19 +4,18 @@ import { setTokens, clearTokens } from '../slices/authSlice';
 import {RootState} from "../reducers/rootReducer";
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://your-api-url',
+    baseURL: 'http://localhost:5000',
 });
 
 const apiMiddleware: Middleware<{}, RootState> = (store: MiddlewareAPI<Dispatch, RootState>) => (next: Dispatch<AnyAction>) => async (action: AnyAction) => {
-    console.log('sdsdsdsd',action.type)
-
-    if (action.type === 'auth/setTokens') {
+    console.log('act',action.type);
+    if (action.type === 'authSlice/setTokens') {
         // Сохранение токенов в localStorage или в cookie
         localStorage.setItem('accessToken', action.payload.accessToken);
         localStorage.setItem('refreshToken', action.payload.refreshToken);
     }
 
-    if (action.type === 'auth/clearTokens') {
+    if (action.type === 'authSlice/clearTokens') {
         // Очистка токенов из localStorage или из cookie
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -33,6 +32,7 @@ const apiMiddleware: Middleware<{}, RootState> = (store: MiddlewareAPI<Dispatch,
     try {
         const result = await next(action);
         console.log('result',result);
+
 
         // Обработка истечения срока действия токена доступа
         if (result.error && result.error.status === 401) {
@@ -56,8 +56,14 @@ const apiMiddleware: Middleware<{}, RootState> = (store: MiddlewareAPI<Dispatch,
             }
         }
 
+        // if(result.error &&result.payload.status===400 ){
+        //      Promise.reject(result.payload.data);
+        // }
+
         return result;
     } catch (error) {
+        console.log('1231232');
+        
         return error;
     }
 };

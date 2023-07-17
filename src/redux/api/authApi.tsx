@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import {IUser} from "../../models/iUser";
+import {APIResponse, IDataResponse, IUser} from "../../models/iUser";
 
 interface RegisterUserPayload {
     name?: string | null;
@@ -10,14 +10,18 @@ interface RegisterUserPayload {
 
 export const authApi = createApi({
     reducerPath: 'authApi',
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000' }),
+    baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000',
+        credentials: 'include', // Set your desired credentials option
+ }),
     endpoints: (builder) => ({
-        registerUser: builder.mutation<IUser, RegisterUserPayload>({
+        registerUser: builder.mutation<APIResponse, RegisterUserPayload>({
             query: (body) => ({
                 url: '/api/registration',
                 method: 'POST',
                 body,
+
             }),
+
         }),
     }),
 });

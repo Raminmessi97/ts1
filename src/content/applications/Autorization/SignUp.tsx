@@ -8,6 +8,12 @@ import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
 import { object, string, TypeOf } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {useRegisterUserMutation} from "../../../redux/api/authApi";
+import {useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import axios from 'axios';
+import {useDispatch} from "react-redux";
+import {setTokens, setUser} from "../../../redux/slices/authSlice";
 
 // 👇 SignUp Schema with Zod
 const signupSchema = object({
@@ -32,7 +38,9 @@ type ISignUp = TypeOf<typeof signupSchema>;
 function RegisterPage() {
 
 
-    const [registerUser, { isLoading, isError }] = useRegisterUserMutation();
+    const [registerUser, { isLoading, isError,error }] = useRegisterUserMutation();
+    let navigate = useNavigate();
+
 
 
     const defaultValues: ISignUp = {
@@ -43,16 +51,68 @@ function RegisterPage() {
     };
 
      // 👇 Object containing all the methods returned by useForm
-  const methods = useForm<ISignUp>({
-    resolver: zodResolver(signupSchema),
-    defaultValues,
-  });
+    const methods = useForm<ISignUp>({
+      resolver: zodResolver(signupSchema),
+      defaultValues,
+    });
 
-    const onSubmitHandler: SubmitHandler<ISignUp> = (values: ISignUp) => {
-        console.log(values);
-        registerUser(values)
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        setSelectedFile(event.target.files[0]);
+    };
+
+    const dispatch = useDispatch();
+    const onSubmitHandler: SubmitHandler<ISignUp> = async(values: ISignUp) => {
+        try{
+            // console.log('ff',values)
+            // let formData = new FormData();
+            // for (const [key, value] of Object.entries(values)) {
+            //     console.log(`${key}: ${value}`);
+            //       formData.append(key, value);
+            // }
+            // formData.append('file', selectedFile);
+
+          //   formData.append('email', 'ramin@gmail.com');
+          //
+          let result = await registerUser(values)
+
+
+          if ("data" in result) {
+              dispatch(setTokens(result.data))
+              let user = result.data.user;
+              dispatch(setUser(user))
+
+              return navigate("/dashboards/crypto")
+
+          } else if ("error" in result) {
+            console.log(result.error); // Access the error property
+          }
+
+
+
+          
+
+          // if(result.error){
+          //   alert(result.error.message);
+          // }
+          
+        }
+        catch(err){
+          console.log('errorrrrr',err);
+        }
     };
   
+
+    // useEffect(()=>{
+    //   if(error){
+    //     console.log('err',error);
+    //     console.log('isError',isError);
+    //     return;
+    //   }
+      
+    //   navigate("/dashboards/crypto")
+    // },[isError,error])
 
   return (
     <>
@@ -155,6 +215,14 @@ function RegisterPage() {
                       required
                       focused
                     />
+
+                  <FormInput
+                      label='file'
+                      type='file'
+                      name='file'
+                      onChange={handleFileChange}
+                      required
+                  />
 
                     <LoadingButton
                       loading={false}

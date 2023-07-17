@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {IUser} from "../../models/iUser";
+import {useSelector} from "react-redux";
+import {RootState} from "../reducers/rootReducer";
 
 interface IUserState {
     user: IUser | null,
@@ -37,3 +39,8 @@ export default authSlice.reducer;
 export const { logout, setUser,setTokens,clearTokens, } = authSlice.actions;
 export const userActions = authSlice.actions
 export const authReducer = authSlice.reducer
+
+export const useAuth = () => {
+    // Use the useSelector hook to access the authentication state from the Redux store
+    return useSelector((state: RootState) => state.auth.user);
+};
